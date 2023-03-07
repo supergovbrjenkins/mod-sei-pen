@@ -38,7 +38,7 @@ jobs:
         outputs:
             out_criarcommitstatus: ${{ steps.Initialize.outputs.out_criarcommitstatus }}
             out_shabranch: "${{ steps.Initialize.outputs.out_shabranch }}"
-            out_shapull: "${{ steps.s_comment_sha.outputs.out_shapull }}"
+            out_shapull: "${{ steps.gravaroutsha.outputs.out_shapull }}"
         steps:
             - 
                 name: Initialize
@@ -85,15 +85,19 @@ jobs:
                       console.log("Jesus");
                       fs.appendFileSync(process.env.GITHUB_ENV, 'PULL_SHA=' + oPull.data.head.sha);
                       console.log("Cristo");
+                      
+                      // n consegui gravar no output entao vou desta forma
                       const fs2 = require('fs');
                       fs2.appendFileSync('temp.txt', 'out_shapull=' + oPull.data.head.sha);
                       console.log("Senhor");
             
             -
+                id: gravaroutsha
+                if: steps.s_comment_sha.outcome == 'sucess'
                 run: |
                     a=$(cat temp.txt)
-                    echo "B${a}B"
-                    exit 1
+                    echo "out_shapull=${a}" >> "$GITHUB_OUTPUT"
+
             - 
                 name: "Create a commit status pending"
                 if: env.CRIARCOMMITSTATUS == 'true'
