@@ -135,7 +135,6 @@ jobs:
 
 
     CreateCommitStatusFinal:
-        if: needs.Inicializar.outputs.out_criarcommitstatus == 'true' && always()
         runs-on: ubuntu-latest
         permissions: write-all
         needs: 
@@ -149,6 +148,7 @@ jobs:
                 uses: actions/github-script@v6
                 with:
                     script: |
+                      if(needs.Inicializar.outputs.out_criarcommitstatus == 'true'){
                       const b = '${{ needs.Inicializar.outputs.out_shabranch }}';
                       const p = '${{ needs.Inicializar.outputs.out_shapull }}';
                       const sha = (b ? b : p);
@@ -163,4 +163,5 @@ jobs:
                            context: "Testes Funcionais",
                            description: "Testes Jenkins",
                            state: st
-                      });
+                      })
+                      };
