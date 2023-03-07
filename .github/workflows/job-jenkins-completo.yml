@@ -68,6 +68,11 @@ jobs:
                   echo "out_criarcommitstatus=$CRIARCOMMITSTATUS" >> "$GITHUB_OUTPUT"
                   echo "out_criarcheckstatus=$CRIARCHECKSTATUS" >> "$GITHUB_OUTPUT"
                   
+                  
+                  echo "Jesus"
+                  echo ${{ inputs.criarCommitStatus }}
+                  echo "Cristo"
+                  
             - 
                 name: "Get Comment SHA"
                 if: |
