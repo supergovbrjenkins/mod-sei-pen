@@ -21,10 +21,6 @@ on:
                 type: boolean
                 description: 'Criar Status no Commit para os Testes'
                 default: true
-            criarCheckStatus:
-                type: boolean
-                description: 'Criar Status Checks para os Testes'
-                default: true
 
 jobs:
     Inicializar:
@@ -39,10 +35,8 @@ jobs:
             DATABASE: "${{ inputs.database || 'mysql' }}"
             BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
             CRIARCOMMITSTATUS: ${{ inputs.criarCommitStatus || false }}
-            CRIARCHECKSTATUS: "${{ inputs.criarCheckStatus || 'false' }}"
         outputs:
             out_criarcommitstatus: ${{ steps.Initialize.outputs.out_criarcommitstatus }}
-            out_criarcheckstatus: ${{ steps.Initialize.outputs.out_criarcheckstatus }}
             out_shabranch: "${{ steps.Initialize.outputs.out_shabranch }}"
             out_shapull: "${{ steps.s_comment_sha.outputs.out_shapull }}"
         steps:
@@ -66,13 +60,7 @@ jobs:
                   
                   echo "out_shabranch=$PULL_SHA" >> "$GITHUB_OUTPUT"                  
                   echo "out_criarcommitstatus=$CRIARCOMMITSTATUS" >> "$GITHUB_OUTPUT"
-                  echo "out_criarcheckstatus=$CRIARCHECKSTATUS" >> "$GITHUB_OUTPUT"
-                  
-                  
-                  echo "Jesus"
-                  echo "a${{ inputs.criarCommitStatus }}b"
-                  echo "Cristo"
-                  
+
             - 
                 name: "Get Comment SHA"
                 if: |
@@ -131,7 +119,6 @@ jobs:
             branchModulo: "${{ needs.Inicializar.outputs.out_shabranch }}"
             branchSuper: "${{ matrix.superversao }}"
             criarCommitStatus: false
-            criarCheckStatus: false
 
 
     CreateCommitStatusFinal:
