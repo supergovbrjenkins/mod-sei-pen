@@ -3,6 +3,10 @@ name: JobJenkins-Completo
 on:
     pull_request:
         branches: [ master ]
+        inputs:
+            criarCommitStatus:
+                type: string
+                default: "true"
   
     issue_comment:
         types: [created, edited]
@@ -34,7 +38,7 @@ jobs:
             PULLR: '${{ github.event.number || github.event.issue.number }}'
             DATABASE: "${{ inputs.database || 'mysql' }}"
             BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
-            CRIARCOMMITSTATUS: ${{ (github.event_name == 'workflow_dispatch' && inputs.criarCommitStatus) || (github.event_name != 'workflow_dispatch') }}
+            CRIARCOMMITSTATUS: ${{ inputs.criarCommitStatus || false }}
             CRIARCHECKSTATUS: "${{ inputs.criarCheckStatus || 'false' }}"
         outputs:
             out_criarcommitstatus: ${{ steps.Initialize.outputs.out_criarcommitstatus }}
