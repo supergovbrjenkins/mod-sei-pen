@@ -1,0 +1,172 @@
+name: jobJenkins-MonoInstancia
+on:
+  #pull_request:
+  #  branches: [ master ]
+  #issue_comment:
+  #  types: [created, edited]
+  workflow_call:
+    inputs:
+      database:
+        type: string
+      branchModulo:
+        type: string
+      branchSuper:
+        type: string
+      criarCommitStatus:
+        type: boolean
+      criarCheckStatus:
+        type: boolean
+
+  workflow_dispatch:
+    inputs:
+      database:
+        type: choice
+        description: Base de Dados
+        options: 
+         - mysql
+         - sqlserver
+         - oracle
+      branchModulo:
+        type: string
+        description: 'Modulo: branch/sha/pr (master, pr/9, etc)'
+        default: 'master'
+      branchSuper:
+        type: string
+        description: 'Branch ou tag do super'
+        default: 'main'
+      criarCommitStatus:
+        type: boolean
+        description: 'Criar Status no Commit para os Testes'
+        default: true
+      criarCheckStatus:
+        type: boolean
+        description: 'Criar Status Checks para os Testes'
+        default: true
+
+jobs:
+  JobJenkins-TestsUP:
+    if: |
+      (github.event_name == 'workflow_dispatch' || 
+      github.event_name == 'pull_request' || 
+      (github.event.issue.pull_request && (contains(github.event.comment.body, 'run test') || contains(github.event.comment.body, 'rodar teste')) ))
+    runs-on: ubuntu-latest
+    permissions: write-all
+    env:
+      PULLR: '${{ github.event.number || github.event.issue.number }}'
+      DATABASE: "${{ inputs.database || 'mysql' }}"
+      BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
+      CRIARCOMMITSTATUS: "${{ inputs.criarCommitStatus || 'false' }}"
+      CRIARCHECKSTATUS: "${{ inputs.criarCheckStatus || 'false' }}"
+
+    steps:
+      - name: Initialize
+        run: |
+          echo $PULLR
+          if [[ "$PULLR" = "null" || "$PULLR" = "" ]]; then
+              PR="${{ inputs.branchModulo }}"
+          else
+              PR="pr/$PULLR"
+          fi
+          echo "PR=$PR" >> $GITHUB_ENV
+          
+          PULL_SHA=$GITHUB_SHA
+          if [[ "$GITHUB_SHA" = "" ]]; then
+              PULL_SHA="${{ github.event.pull_request.head.sha }}"
+          fi
+          echo "PULL_SHA=$PULL_SHA" >> $GITHUB_ENV
+      
+ 
+      - name: "Get Comment SHA"
+        if: |
+          env.CRIARCOMMITSTATUS &&
+          ( github.event.issue.pull_request && 
+          (contains(github.event.comment.body, 'run test') || contains(github.event.comment.body, 'rodar teste')) )
+        id: s_comment_sha
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const oPull = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: '${{ github.event.issue.number }}'
+            });
+            
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_ENV, 'PULL_SHA=' + oPull.data.head.sha);
+      
+
+      - name: "Create a commit status pending"
+        if: env.CRIARCOMMITSTATUS == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const formatedTimestamp = ()=> {
+              const d = new Date()
+              const date = d.toISOString().split('T')[0];
+              const time = d.toTimeString().split(' ')[0];
+              return `${date} ${time}`
+            }
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: "${{ env.PULL_SHA }}",
+              context: "Testes Funcionais",
+              description: "Enviado Testes ao Jenkins " + formatedTimestamp() + " UTC",
+              state: 'pending'
+            });
+
+      - name: Trigger jenkins job
+        id: s_jenkins
+        uses: supergovbr/super-cicd/docker/jenkins-githubaction-mod@main
+        with:
+          #job_name: "PEN/SUPER/01.00-TestsUp.groovy"
+          job_name: "PEN/MOD-SEI-PEN/tmp"
+          parameters: '{"database": "${{ env.DATABASE }}", "branchGitSuper": "${{ env.BRANCHSUPER }}", "branchGit": "${{ env.PR }}"}'
+          timeout: "1200"
+          start_timeout: "400"
+          interval: "20"
+    
+      
+      - name: "Create a commit status run"
+        if: (success() || failure()) && (env.CRIARCOMMITSTATUS == 'true')
+        uses: actions/github-script@v6
+        env:
+          parameter_url: '${{ github.event.workflow_run.html_url }}'
+        with:
+          debug: ${{ secrets.ACTIONS_STEP_DEBUG || false }}
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: "${{ env.PULL_SHA }}", 
+              target_url: "${{ steps.s_jenkins.outputs.build_url }}",
+              context: "Testes Funcionais",
+              description: "Testes Jenkins",
+              state: '${{ steps.s_jenkins.outcome }}'
+            });
+
+      - name: "Create a check run"
+        uses: actions/github-script@v6
+        if: (success() || failure()) && (env.CRIARCHECKSTATUS == 'true')
+        with:
+          script: |
+            // any JavaScript code can go here, you can use Node JS APIs too.
+            // Docs: https://docs.github.com/en/rest/checks/runs#create-a-check-run
+            // Rest: https://octokit.github.io/rest.js/v18#checks-create
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head_sha: context.sha,
+              name: "Versao Super: ${{ env.BRANCHSUPER }} - DB: ${{ env.DATABASE }}",
+              status: "completed",
+              // Careful, code injection can happen.
+              conclusion: "${{ steps.s_jenkins.outcome }}",
+              // This is safe, not string interpolation.
+              details_url: "${{ steps.s_jenkins.outputs.build_url }}",
+              output: {
+                title: "Parametros Dessa Execucao",
+                summary: "Resultado: ${{ steps.s_jenkins.outcome }}",
+                text: "Versao Super: ${{ env.BRANCHSUPER }}<br/>Database: ${{ env.DATABASE }} <br />Jenkins: ${{ steps.s_jenkins.outputs.build_url }}",
+              },
+            });

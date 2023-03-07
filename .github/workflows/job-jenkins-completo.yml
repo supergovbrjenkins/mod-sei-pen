@@ -1,0 +1,159 @@
+name: JobJenkins-Completo
+
+on:
+    pull_request:
+        branches: [ master ]
+  
+    issue_comment:
+        types: [created, edited]
+  
+    workflow_dispatch:
+        inputs:
+            branchModulo:
+                type: string
+                description: 'Modulo: branch/sha/pr (master, pr/9, etc)'
+                default: 'master'
+            criarCommitStatus:
+                type: boolean
+                description: 'Criar Status no Commit para os Testes'
+                default: true
+            criarCheckStatus:
+                type: boolean
+                description: 'Criar Status Checks para os Testes'
+                default: true
+
+jobs:
+    Inicializar:
+        if: |
+          (github.event_name == 'workflow_dispatch' || 
+          github.event_name == 'pull_request' || 
+          (github.event.issue.pull_request && (contains(github.event.comment.body, 'run test') || contains(github.event.comment.body, 'rodar teste')) ))
+        runs-on: ubuntu-latest
+        permissions: write-all
+        env:
+            PULLR: '${{ github.event.number || github.event.issue.number }}'
+            DATABASE: "${{ inputs.database || 'mysql' }}"
+            BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
+            CRIARCOMMITSTATUS: ${{ inputs.criarCommitStatus || false }}
+            CRIARCHECKSTATUS: "${{ inputs.criarCheckStatus || 'false' }}"
+        outputs:
+            out_criarcommitstatus: ${{ steps.Initialize.outputs.out_criarcommitstatus }}
+            out_criarcheckstatus: ${{ steps.Initialize.outputs.out_criarcheckstatus }}
+            out_shabranch: "${{ steps.Initialize.outputs.out_shabranch }}"
+            out_shapull: "${{ steps.s_comment_sha.outputs.out_shapull }}"
+        steps:
+            - 
+                name: Initialize
+                id: Initialize
+                run: |
+                  echo $PULLR
+                  if [[ "$PULLR" = "null" || "$PULLR" = "" ]]; then
+                      PR="${{ inputs.branchModulo }}"
+                  else
+                      PR="pr/$PULLR"
+                  fi
+                  echo "PR=$PR" >> $GITHUB_ENV
+          
+                  PULL_SHA=$GITHUB_SHA
+                  if [[ "$GITHUB_SHA" = "" ]]; then
+                      PULL_SHA="${{ github.event.pull_request.head.sha }}"
+                  fi
+                  echo "PULL_SHA=$PULL_SHA" >> $GITHUB_ENV
+                  
+                  echo "out_shabranch=$PULL_SHA" >> "$GITHUB_OUTPUT"                  
+                  echo "out_criarcommitstatus=$CRIARCOMMITSTATUS" >> "$GITHUB_OUTPUT"
+                  echo "out_criarcheckstatus=$CRIARCHECKSTATUS" >> "$GITHUB_OUTPUT"
+                  
+            - 
+                name: "Get Comment SHA"
+                if: |
+                  env.CRIARCOMMITSTATUS &&
+                  ( github.event.issue.pull_request && 
+                  (contains(github.event.comment.body, 'run test') || contains(github.event.comment.body, 'rodar teste')) )
+                id: s_comment_sha
+                uses: actions/github-script@v6
+                with:
+                    script: |
+                      const oPull = await github.rest.pulls.get({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        pull_number: '${{ github.event.issue.number }}'
+                      });
+            
+                      const fs = require('fs');
+                      fs.appendFileSync(process.env.GITHUB_ENV, 'PULL_SHA=' + oPull.data.head.sha);
+                      fs.appendFileSync(process.env.GITHUB_OUTPUT, 'out_shapull=' + oPull.data.head.sha);
+
+            - 
+                name: "Create a commit status pending"
+                if: env.CRIARCOMMITSTATUS == 'true'
+                uses: actions/github-script@v6
+                with:
+                    script: |
+                      const formatedTimestamp = ()=> {
+                        const d = new Date()
+                        const date = d.toISOString().split('T')[0];
+                        const time = d.toTimeString().split(' ')[0];
+                        return `${date} ${time}`
+                      }
+            
+                      await github.rest.repos.createCommitStatus({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        sha: "${{ env.PULL_SHA }}",
+                        context: "Testes Funcionais",
+                        description: "Enviado Testes ao Jenkins " + formatedTimestamp() + " UTC",
+                        state: 'pending'
+                      });
+
+
+    TriggerInstancias:
+        permissions: write-all
+        needs: Inicializar
+        strategy:
+            max-parallel: 3
+            matrix:
+                #superversao: ['4.0.3.3', '4.0.3.4', '4.0.9.12']
+                superversao: ['4.0.3.3']
+                database: ['mysql', 'sqlserver', 'oracle']
+        uses: ./.github/workflows/job-jenkins-instancia.yml
+        with:
+            database: "${{ matrix.database }}"
+            branchModulo: "master"
+            branchSuper: "${{ matrix.superversao }}"
+            criarCommitStatus: false
+            criarCheckStatus: false
+
+
+    CreateCommitStatusFinal:
+        if: needs.Inicializar.outputs.out_criarcommitstatus == 'true' && always()
+        runs-on: ubuntu-latest
+        permissions: write-all
+        needs: 
+            - TriggerInstancias
+            - Inicializar
+        env:
+            BUILD_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        steps:
+            -
+                name: "Create a commit status run"                
+                uses: actions/github-script@v6
+                with:
+                    script: |
+                      const b = '${{ needs.Inicializar.outputs.out_shabranch }}';
+                      const p = '${{ needs.Inicializar.outputs.out_shapull }}';
+                      const sha = (b ? b : p);
+                      
+                      const st = ( '${{ needs.TriggerInstancias.result }}' == 'success' ? 'success' : 'failure'  );
+                      
+                      await github.rest.repos.createCommitStatus({
+                           owner: context.repo.owner,
+                           repo: context.repo.repo,
+                           sha: sha, 
+                           target_url: "${{ env.BUILD_URL }}",
+                           context: "Testes Funcionais",
+                           description: "Testes Jenkins",
+                           state: st
+                      });
+                      
+    
