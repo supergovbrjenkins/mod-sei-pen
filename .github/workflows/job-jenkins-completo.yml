@@ -117,13 +117,13 @@ jobs:
                 #superversao: ['4.0.3.3', '4.0.3.4', '4.0.9.12']
                 superversao: ['4.0.3.3']
                 database: ['mysql', 'sqlserver', 'oracle']
-        uses: ./.github/workflows/job-jenkins-instancia.yml
-        with:
-            database: "${{ matrix.database }}"
-            branchModulo: "master"
-            branchSuper: "${{ matrix.superversao }}"
-            criarCommitStatus: false
-            criarCheckStatus: false
+            uses: ./.github/workflows/job-jenkins-instancia.yml
+            with:
+                database: "${{ matrix.database }}"
+                branchModulo: "master"
+                branchSuper: "${{ matrix.superversao }}"
+                criarCommitStatus: false
+                criarCheckStatus: false
 
 
     CreateCommitStatusFinal:
@@ -156,5 +156,3 @@ jobs:
                            description: "Testes Jenkins",
                            state: st
                       });
-                      
-    
