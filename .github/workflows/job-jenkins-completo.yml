@@ -86,9 +86,13 @@ jobs:
                       fs.appendFileSync(process.env.GITHUB_ENV, 'PULL_SHA=' + oPull.data.head.sha);
                       console.log("Cristo");
                       const fs2 = require('fs');
-                      fs2.appendFileSync(process.env.GITHUB_OUTPUT, 'out_shapull=' + oPull.data.head.sha);
+                      fs2.appendFileSync('temp.txt', 'out_shapull=' + oPull.data.head.sha);
                       console.log("Senhor");
-
+            
+            -
+                run: |
+                    cat temp.txt
+                    exit 1
             - 
                 name: "Create a commit status pending"
                 if: env.CRIARCOMMITSTATUS == 'true'
