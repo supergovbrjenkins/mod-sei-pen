@@ -82,8 +82,11 @@ jobs:
                       console.log(oPull.data.head.sha);
                       
                       const fs = require('fs');
+                      console.log("Jesus");
                       fs.appendFileSync(process.env.GITHUB_ENV, 'PULL_SHA=' + oPull.data.head.sha);
+                      console.log("Cristo");
                       fs.appendFileSync(process.env.GITHUB_OUTPUT, 'out_shapull=' + oPull.data.head.sha);
+                      console.log("Senhor");
 
             - 
                 name: "Create a commit status pending"
