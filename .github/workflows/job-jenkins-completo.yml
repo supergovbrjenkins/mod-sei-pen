@@ -3,11 +3,7 @@ name: JobJenkins-Completo
 on:
     pull_request:
         branches: [ master ]
-        inputs:
-            criarCommitStatus:
-                type: string
-                default: "true"
-  
+
     issue_comment:
         types: [created, edited]
   
@@ -82,15 +78,12 @@ jobs:
                       console.log(oPull.data.head.sha);
                       
                       const fs = require('fs');
-                      console.log("Jesus");
                       fs.appendFileSync(process.env.GITHUB_ENV, 'PULL_SHA=' + oPull.data.head.sha);
-                      console.log("Cristo");
-                      
+
                       // n consegui gravar no output entao vou desta forma
                       const fs2 = require('fs');
                       fs2.appendFileSync('temp.txt', 'out_shapull=' + oPull.data.head.sha);
-                      console.log("Senhor");
-            
+
             -
                 id: gravaroutsha
                 if: steps.s_comment_sha.outcome == 'success'
@@ -127,13 +120,13 @@ jobs:
         strategy:
             max-parallel: 3
             matrix:
-                #superversao: ['4.0.3.3', '4.0.3.4', '4.0.9.12']
-                superversao: ['4.0.3.3']
+                superversao: ['4.0.3.3', '4.0.3.4', '4.0.9.12']
+                #superversao: ['4.0.3.3']
                 database: ['mysql', 'sqlserver', 'oracle']
         uses: ./.github/workflows/job-jenkins-instancia.yml
         with:
             database: "${{ matrix.database }}"
-            branchModulo: "8863f029c80e0256da5e36c09ebcbd147bdd46de"
+            branchModulo: "${{ needs.Inicializar.outputs.out_shapull || needs.Inicializar.outputs.out_shabranch }}"
             branchSuper: "${{ matrix.superversao }}"
             criarCommitStatus: false
 
