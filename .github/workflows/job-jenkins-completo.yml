@@ -92,7 +92,7 @@ jobs:
             -
                 run: |
                     a=$(cat temp.txt)
-                    echo "B$aB"
+                    echo "B${a}B"
                     exit 1
             - 
                 name: "Create a commit status pending"
