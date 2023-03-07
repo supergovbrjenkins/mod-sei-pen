@@ -133,7 +133,7 @@ jobs:
         uses: ./.github/workflows/job-jenkins-instancia.yml
         with:
             database: "${{ matrix.database }}"
-            branchModulo: "${{ needs.Inicializar.outputs.out_shabranch }}"
+            branchModulo: "8863f029c80e0256da5e36c09ebcbd147bdd46de"
             branchSuper: "${{ matrix.superversao }}"
             criarCommitStatus: false
 
