@@ -76,7 +76,11 @@ jobs:
                         repo: context.repo.repo,
                         pull_number: '${{ github.event.issue.number }}'
                       });
-            
+                      
+                      console.log(context.repo.owner);
+                      console.log(context.repo.repo);
+                      console.log(oPull.data.head.sha);
+                      
                       const fs = require('fs');
                       fs.appendFileSync(process.env.GITHUB_ENV, 'PULL_SHA=' + oPull.data.head.sha);
                       fs.appendFileSync(process.env.GITHUB_OUTPUT, 'out_shapull=' + oPull.data.head.sha);
