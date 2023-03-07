@@ -93,7 +93,7 @@ jobs:
             
             -
                 id: gravaroutsha
-                if: steps.s_comment_sha.outcome == 'sucess'
+                if: steps.s_comment_sha.outcome == 'success'
                 run: |
                     a=$(cat temp.txt)
                     echo "out_shapull=${a}" >> "$GITHUB_OUTPUT"
