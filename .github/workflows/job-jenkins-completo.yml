@@ -3,6 +3,10 @@ name: JobJenkins-Completo
 on:
     pull_request:
         branches: [ master ]
+        inputs:
+            criarCommitStatus:
+                type: boolean
+                default: true
   
     issue_comment:
         types: [created, edited]
