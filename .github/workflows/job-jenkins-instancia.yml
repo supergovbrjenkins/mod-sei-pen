@@ -55,8 +55,8 @@ jobs:
       PULLR: '${{ github.event.number || github.event.issue.number }}'
       DATABASE: "${{ inputs.database || 'mysql' }}"
       BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
-      CRIARCOMMITSTATUS: "${{ inputs.criarCommitStatus || 'false' }}"
-      CRIARCHECKSTATUS: "${{ inputs.criarCheckStatus || 'false' }}"
+      CRIARCOMMITSTATUS: "${{ inputs.criarCommitStatus || false }}"
+      CRIARCHECKSTATUS: "${{ inputs.criarCheckStatus || false }}"
 
     steps:
       - name: Initialize

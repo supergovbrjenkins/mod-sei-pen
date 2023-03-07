@@ -119,7 +119,7 @@ jobs:
         uses: ./.github/workflows/job-jenkins-instancia.yml
         with:
             database: "${{ matrix.database }}"
-            branchModulo: "master"
+            branchModulo: "${{ env.PR }}"
             branchSuper: "${{ matrix.superversao }}"
             criarCommitStatus: false
             criarCheckStatus: false
