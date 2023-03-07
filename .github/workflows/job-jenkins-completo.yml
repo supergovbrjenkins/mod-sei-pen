@@ -38,7 +38,7 @@ jobs:
             PULLR: '${{ github.event.number || github.event.issue.number }}'
             DATABASE: "${{ inputs.database || 'mysql' }}"
             BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
-            CRIARCOMMITSTATUS: ${{ inputs.criarCommitStatus || false }}
+            CRIARCOMMITSTATUS: ${{ (github.event_name == 'workflow_dispatch' && inputs.criarCommitStatus) || (github.event_name != 'workflow_dispatch') }}
             CRIARCHECKSTATUS: "${{ inputs.criarCheckStatus || 'false' }}"
         outputs:
             out_criarcommitstatus: ${{ steps.Initialize.outputs.out_criarcommitstatus }}
