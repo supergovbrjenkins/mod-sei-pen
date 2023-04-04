@@ -1,8 +1,8 @@
 name: JobJenkins-Completo
 
 on:
-    pull_request:
-        branches: [ master ]
+    #pull_request:
+    #    branches: [ master ]
 
     issue_comment:
         types: [created, edited]
@@ -103,7 +103,6 @@ jobs:
                 #superversao: ['4.0.3.3']
                 database: ['mysql', 'sqlserver', 'oracle']
         uses: ./.github/workflows/job-jenkins-instancia.yml
-        secrets: inherit
         with:
             database: "${{ matrix.database }}"
             branchModulo: "${{ needs.Inicializar.outputs.out_shapull || needs.Inicializar.outputs.out_shabranch }}"
