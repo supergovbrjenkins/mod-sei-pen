@@ -30,7 +30,7 @@ jobs:
             PULLR: '${{ github.event.number || github.event.issue.number }}'
             DATABASE: "${{ inputs.database || 'mysql' }}"
             BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
-            CRIARCOMMITSTATUS: ${{ inputs.criarCommitStatus || false }}
+            CRIARCOMMITSTATUS: ${{ inputs.criarCommitStatus || true }}
         outputs:
             out_criarcommitstatus: ${{ steps.Initialize.outputs.out_criarcommitstatus }}
             out_shabranch: "${{ steps.Initialize.outputs.out_shabranch }}"
@@ -82,7 +82,7 @@ jobs:
 
                       // n consegui gravar no output entao vou desta forma
                       const fs2 = require('fs');
-                      fs2.appendFileSync('temp.txt', 'out_shapull=' + oPull.data.head.sha);
+                      fs2.appendFileSync('temp.txt', oPull.data.head.sha);
 
             -
                 id: gravaroutsha
