@@ -93,7 +93,6 @@ jobs:
 
             - 
                 name: "Create a commit status pending"
-                permissions: write-all
                 if: env.CRIARCOMMITSTATUS == 'true'
                 uses: actions/github-script@v6
                 with:
