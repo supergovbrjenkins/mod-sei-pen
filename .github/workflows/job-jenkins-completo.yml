@@ -137,6 +137,7 @@ jobs:
         needs: 
             - TriggerInstancias
             - Inicializar
+        if: ${{ always() }}
         env:
             BUILD_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         steps:
