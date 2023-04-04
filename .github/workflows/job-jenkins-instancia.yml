@@ -47,6 +47,7 @@ jobs:
       (github.event.issue.pull_request && (contains(github.event.comment.body, 'run test') || contains(github.event.comment.body, 'rodar teste')) ))
     runs-on: ubuntu-latest
     permissions: write-all
+    secrets: inherit
     env:
       PULLR: '${{ github.event.number || github.event.issue.number }}'
       DATABASE: "${{ inputs.database || 'mysql' }}"
