@@ -105,7 +105,7 @@ jobs:
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: "${{ env.PULL_SHA }}",
+              sha: '21ba67446ae2a0d85cbb796df55636d4780be115',
               context: "Testes Funcionais/${{ env.BRANCHSUPER }} - ${{ env.DATABASE }}",
               description: "Enviado Testes ao Jenkins " + formatedTimestamp() + " UTC",
               state: 'pending'
