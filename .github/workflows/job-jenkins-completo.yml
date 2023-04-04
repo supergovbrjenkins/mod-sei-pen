@@ -149,7 +149,7 @@ jobs:
                       if("${{ needs.Inicializar.outputs.out_criarcommitstatus }}" == 'true'){
                       const b = '${{ needs.Inicializar.outputs.out_shabranch }}';
                       const p = '${{ needs.Inicializar.outputs.out_shapull }}';
-                      const sha = (b ? b : p);
+                      const sha = (p ? p : b);
                       
                       const st = ( '${{ needs.TriggerInstancias.result }}' == 'success' ? 'success' : 'failure'  );
                       
