@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     env:
-      PULLR2: '${{ github.event.number || github.event.issue.number }}'
+      PULLR: '${{ github.event.number || github.event.issue.number }}'
       DATABASE: "${{ inputs.database || 'mysql' }}"
       BRANCHSUPER: "${{ inputs.branchSuper || 'main' }}"
       CRIARCOMMITSTATUS: "${{ inputs.criarCommitStatus || false }}"
@@ -68,7 +68,7 @@ jobs:
           if [[ "$GITHUB_SHA" = "" ]]; then
               PULL_SHA="${{ github.event.pull_request.head.sha }}"
           fi
-          PULL_SHA="${{ github.event.pull_request.head.sha }}"
+          #PULL_SHA="${{ github.event.pull_request.head.sha }}"
           echo "PULL_SHA=$PULL_SHA" >> $GITHUB_ENV
       
  
