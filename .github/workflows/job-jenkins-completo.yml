@@ -1,8 +1,8 @@
 name: JobJenkins-Completo
 
 on:
-    #pull_request:
-    #    branches: [ master ]
+    pull_request:
+        branches: [ master ]
 
     issue_comment:
         types: [created, edited]
