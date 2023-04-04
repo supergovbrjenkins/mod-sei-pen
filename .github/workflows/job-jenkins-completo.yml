@@ -108,4 +108,3 @@ jobs:
             branchModulo: "${{ needs.Inicializar.outputs.out_shapull || needs.Inicializar.outputs.out_shabranch }}"
             branchSuper: "${{ matrix.superversao }}"
             criarCommitStatus: true
-
