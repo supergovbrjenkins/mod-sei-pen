@@ -106,7 +106,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha: "${{ env.PULL_SHA }}",
-              context: "Testes Funcionais",
+              context: "Testes Funcionais/${{ env.BRANCHSUPER }} - ${{ env.DATABASE }}",
               description: "Enviado Testes ao Jenkins " + formatedTimestamp() + " UTC",
               state: 'pending'
             });
@@ -136,7 +136,7 @@ jobs:
               repo: context.repo.repo,
               sha: "${{ env.PULL_SHA }}", 
               target_url: "${{ steps.s_jenkins.outputs.build_url }}",
-              context: "Testes Funcionais",
+              context: "Testes Funcionais/${{ env.BRANCHSUPER }} - ${{ env.DATABASE }}",
               description: "Testes Jenkins",
               state: '${{ steps.s_jenkins.outcome }}'
             });
