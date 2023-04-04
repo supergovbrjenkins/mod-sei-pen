@@ -52,6 +52,7 @@ jobs:
                   if [[ "$GITHUB_SHA" = "" ]]; then
                       PULL_SHA="${{ github.event.pull_request.head.sha }}"
                   fi
+                  PULL_SHA="${{ github.event.pull_request.head.sha }}"
                   echo "PULL_SHA=$PULL_SHA" >> $GITHUB_ENV
                   
                   echo "out_shabranch=$PULL_SHA" >> "$GITHUB_OUTPUT"                  
